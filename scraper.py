@@ -6,40 +6,50 @@ from selenium.webdriver.common.action_chains import ActionChains
 import sys
 sys.stdin.reconfigure(encoding='utf-8')
 sys.stdout.reconfigure(encoding='utf-8')
-driver = webdriver.Chrome(ChromeDriverManager().install())
-driver.get("https://www.google.com")
-driver.get(
-    'https://shopee.tw/mall/%E5%B1%85%E5%AE%B6%E7%94%9F%E6%B4%BB-cat.11040925')
-time.sleep(5)
+options = webdriver.ChromeOptions()
+options.add_experimental_option('excludeSwitches', ['enable-logging'])
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+# driver = webdriver.Chrome(
+#    r"D:\scrapercourse-shopeemall\scrapercourse-shopeemall\chromedriver.exe")
+# driver.get("https://www.google.com")
+for page in range(1, 3):
+    driver.get(
+        f'https://shopee.tw/mall/%E5%B1%85%E5%AE%B6%E7%94%9F%E6%B4%BB-cat.11040925/popular?pageNumber={page}')
 
-#ActionChains(driver).move_by_offset(100, 100).click().perform()
+    # driver.get(
+    #    'https://shopee.tw/mall/%E5%B1%85%E5%AE%B6%E7%94%9F%E6%B4%BB-cat.11040925')
+    time.sleep(5)
 
-cards = driver.find_elements(
-    By.CSS_SELECTOR, "div[class='col-xs-2 recommend-products-by-view__item-card-wrapper']")
+    #ActionChains(driver).move_by_offset(100, 100).click().perform()
 
-items = []
+    cards = driver.find_elements(
+        By.CSS_SELECTOR, "div[class='col-xs-2 recommend-products-by-view__item-card-wrapper']")
 
-for card in cards:
-    ActionChains(driver).move_to_element(card).perform()
-    title = card.find_element(
-        By.CSS_SELECTOR, "div[class='ie3A+n bM+7UW Cve6sh']").text
-    price = card.find_element(
-        By.CSS_SELECTOR, "div[class='vioxXd rVLWG6']").text
-    link = card.find_element(
-        By.TAG_NAME, "a").get_attribute('href')
-    items.append((title, price, link))
-# print(items)
+    items = []
 
-result = []
-for item in items:
-    driver.get(item[2])
+    for card in cards:
+        ActionChains(driver).move_to_element(card).perform()
+        title = card.find_element(
+            By.CSS_SELECTOR, "div[class='ie3A+n bM+7UW Cve6sh']").text
+        price = card.find_element(
+            By.CSS_SELECTOR, "div[class='vioxXd rVLWG6']").text
+        link = card.find_element(
+            By.TAG_NAME, "a").get_attribute('href')
+        items.append((title, price, link))
+    # print(items)
 
-    for i in range(8):
-        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
-        time.sleep(3)
+    result = []
+    for item in items:
+        driver.get(item[2])
 
-    comments = driver.find_elements(By.CSS_SELECTOR, "div[class='Em3Qhp']")
-    for comment in comments:
-        result.append((item[0], item[1], comment.text))
-    break
-print(result)
+        for i in range(8):
+            driver.execute_script(
+                "window.scrollTo(0,document.body.scrollHeight)")
+            time.sleep(3)
+
+        comments = driver.find_elements(By.CSS_SELECTOR, "div[class='Em3Qhp']")
+        for comment in comments:
+            result.append((item[0], item[1], comment.text))
+        break
+    print(f"第{page}頁")
+    print(result)
